@@ -45,6 +45,7 @@ GEM
       capybara (~> 3.0)
       ferrum (~> 0.14.0)
     diff-lcs (1.5.1)
+    dotenv (3.1.2)
     ferrum (0.14)
       addressable (~> 2.5)
       concurrent-ruby (~> 1.1)
@@ -121,6 +122,7 @@ PLATFORMS
 DEPENDENCIES
   cucumber
   cuprite
+  dotenv
   rspec-expectations
   rubocop
 

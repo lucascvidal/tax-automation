@@ -2,6 +2,7 @@
 
 source "https://rubygems.org"
 
+gem "dotenv"
 gem "cucumber"
 gem "cuprite"
 gem "rspec-expectations"
