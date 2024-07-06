@@ -4,6 +4,10 @@ This project uses Ruby, Cucumber, Capybara and Cuprite to calculate taxable reve
 
 The only purpose of this repo is automating a task I have to do manually every month, and couldn't trust anybody else to do it at this moment, so I, as a programmer, thought "why not write code to do that for me?".
 
+The scripts parse a PDF document, get the taxes and revenue information, prepare it and input that into the government system.
+
+The document to be parse is a statement from Charles Schwab broker. At this moment, I have no intent on parsing any other broker statements.
+
 ## Development environment
 
 I'm using [VS Code Dev Container](https://code.visualstudio.com/docs/remote/containers) for this project.
