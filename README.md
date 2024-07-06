@@ -1,19 +1,17 @@
-# Automação de Testes com Cucumber, Cuprite e Capybara
+# Tax filling automation scripts with Cucumber, Capybara and Cuprite
 
-Este projeto utiliza Cucumber, Cuprite e Capybara para automação de testes.
+This project uses Ruby, Cucumber, Capybara and Cuprite to calculate taxable revenue, withheld taxes and fill them into the Brazilian Government system for taxing international revenue for brazilian citizens.
 
-## Ambiente de Desenvolvimento
+The only purpose of this repo is automating a task I have to do manually every month, and couldn't trust anybody else to do it at this moment, so I, as a programmer, thought "why not write code to do that for me?".
 
-Recomendamos o uso do [VS Code Dev Container](https://code.visualstudio.com/docs/remote/containers) para um ambiente de desenvolvimento consistente e isolado. Isso ajudará a garantir que todos os desenvolvedores estejam trabalhando com as mesmas dependências e configurações.
+## Development environment
 
-## Configurações
+I'm using [VS Code Dev Container](https://code.visualstudio.com/docs/remote/containers) for this project.
 
-As configurações para os testes estão localizadas no diretório `features/support/env`.
+## Configuration
 
-## Funcionalidades Testadas
+Configuration can be tweaked at `features/support/env`.
 
-As funcionalidades que estão sendo testadas estão descritas nos arquivos localizados no diretório `features/`.
+## Executing the scripts
 
-## Executando os Testes
-
-Para executar os testes, você pode usar o comando `cucumber` no terminal. Certifique-se de que você está no diretório raiz do projeto quando executar este comando.
+First of all, create a .env file and fill the GOV_USERNAME and GOV_PASSWORD variables in it. Then you can run the scripts by typing `cucumber` at the project's root directory. Just follow the instructions that pop up in the terminal and it'll be ok.
