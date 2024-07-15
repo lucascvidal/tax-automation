@@ -1,3 +1,4 @@
 .ruby-lsp/
 .env
 tmp/
+.byebug_history
