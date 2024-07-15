@@ -4,34 +4,40 @@ require_relative('../support/pdf_parser')
 require 'uri'
 require 'net/http'
 require 'capybara'
+require 'byebug'
 
-Given("I'm at the login page") do
-  visit 'https://cav.receita.fazenda.gov.br/autenticacao/login'
-  find('#login-dados-certificado > p:nth-child(2) > input[type=image]').click
-end
-
-When('I log in with my credentials') do
-  sleep 120
-end
-
-And('I prepare the transactions details data') do
+Given('I prepare the transactions details data') do
   pdf_data = extract_data_from_pdf('/workspaces/tax-automation/tmp/statement.pdf')
   split_statement_period = pdf_data[:statement_period].split(' ')
   ptax_date = Date.parse("#{split_statement_period.first} 15th, #{split_statement_period.last}") << 1
-  ptax_buy_rate = fetch_ptax_rate(ptax_date)
+  @ptax_buy_rate = fetch_ptax_rate(ptax_date)
   @transactions = pdf_data[:transactions]
   clean_and_convert_amount(@transactions)
   add_missing_dates(@transactions)
   complement_date_with_year(@transactions, ptax_date.year)
-  convert_using_ptax(@transactions, ptax_buy_rate)
+  convert_using_ptax(@transactions, @ptax_buy_rate)
 end
 
 Then('I fill in the payment information') do
   cookies = load_cookies('/workspaces/tax-automation/tmp/cookie.json')
-  add_cookies(cookies)
+  add_cookies(cookies['cookies'])
   visit 'https://www3.cav.receita.fazenda.gov.br/carneleao/pagamentos'
+
+  begin
+    find('body > modal-container > div.modal-dialog.modal-dialog-centered > div > clweb-modal-confirmar-ciencia-inicial > div > div > div > div.modal-footer > div > div.form-group.col-sm-3 > button').click
+  rescue StandardError => e
+    puts e
+  end
+
   @transactions.select { |transaction| transaction[2] == 'NRA Tax' }.each do |tax|
-    # Fill pagamentos
+    click_link 'Pagamentos'
+    find('#conteudo > clweb-lista-pagamento > nb-card > nb-card-header > div > div.form-group.col-sm-4 > button').click
+    find('#conteudo > clweb-pagamento > nb-card > nb-card-body > div > div > form > div > div:nth-child(1) > nb-card > nb-card-body > div > div > div:nth-child(1) > div > div > div > ngx-select > div > div.ngx-select__selected.ng-star-inserted > div').click
+    click_link 'Imposto pago no exterior'
+    fill_in 'dataLancamento', with: Date.strptime(tax.first, '%m/%d/%Y').strftime('%d/%m/%Y')
+    fill_in 'historico', with: "Imposto pago referente a #{tax[3]}. Dólar Compra PTAX R$ #{@ptax_buy_rate}."
+    fill_in 'valor', with: "R$ #{tax.last.truncate(2)}"
+    click_button 'INCLUIR PAGAMENTO'
   end
 end
 
@@ -61,9 +67,8 @@ def fetch_ptax_rate(date)
     ptax_buy_rate = JSON.parse(response.body)['value'][0]['cotacaoCompra']
     date -= 1
   end
-rescue StandardError => e
-  puts e
-  nil
+
+  ptax_buy_rate
 end
 
 def clean_and_convert_amount(transactions)
@@ -95,5 +100,20 @@ def convert_using_ptax(transactions, ptax_buy_rate)
 
   transactions.each do |transaction|
     transaction[-1] = transaction[-1] * ptax_buy_rate
+  end
+end
+
+def load_cookies(file_path)
+  JSON.parse(File.read(file_path))
+end
+
+def add_cookies(cookies)
+  cookies.each do |cookie|
+    page.driver.set_cookie(cookie['name'], cookie['value'],
+                           { domain: cookie['domain'],
+                             path: cookie['path'],
+                             expires: cookie['expires'] ? Time.at(cookie['expires']) : nil,
+                             secure: cookie['secure'],
+                             http_only: cookie['httpOnly'] })
   end
 end
