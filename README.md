@@ -18,4 +18,4 @@ Configuration can be tweaked at `features/support/env`.
 
 ## Executing the scripts
 
-First of all, create a .env file and fill the GOV_USERNAME and GOV_PASSWORD variables in it. Then you can run the scripts by typing `cucumber` at the project's root directory. Just follow the instructions that pop up in the terminal and it'll be ok.
+First of all, you need to authenticate in Gov.br and then capture the cookies to be used within cucumber. This has to be done because of captchas present into the authentication flow. I'm using the J2 Cookies chrome extension to export cookies in JSON format. Place the cookies into tmp/cookies.json file, and also place the statement to be used as source for the transaction details in tmp/statement.pdf. Then you can run the scripts by typing `cucumber` at the project's root directory.
