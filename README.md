@@ -6,7 +6,7 @@ The only purpose of this repo is automating a task I have to do manually every m
 
 The scripts parse a PDF document, get the taxes and revenue information, prepare it and input that into the government system.
 
-The document to be parse is a statement from Charles Schwab broker. At this moment, I have no intent on parsing any other broker statements.
+The document to be parsed is a statement from Charles Schwab broker. At this moment, I have no intent on parsing any other broker statements.
 
 ## Development environment
 
