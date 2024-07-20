@@ -24,6 +24,7 @@ Then('I fill in the payment information') do
   visit 'https://www3.cav.receita.fazenda.gov.br/carneleao/pagamentos'
 
   begin
+    sleep 3
     find('body > modal-container > div.modal-dialog.modal-dialog-centered > div > clweb-modal-confirmar-ciencia-inicial > div > div > div > div.modal-footer > div > div.form-group.col-sm-3 > button').click
   rescue StandardError => e
     puts e
@@ -31,28 +32,69 @@ Then('I fill in the payment information') do
 
   @transactions.select { |transaction| transaction[2] == 'NRA Tax' }.each do |tax|
     click_link 'Pagamentos'
+    sleep 3
     find('#conteudo > clweb-lista-pagamento > nb-card > nb-card-header > div > div.form-group.col-sm-4 > button').click
+    sleep 1
     find('#conteudo > clweb-pagamento > nb-card > nb-card-body > div > div > form > div > div:nth-child(1) > nb-card > nb-card-body > div > div > div:nth-child(1) > div > div > div > ngx-select > div > div.ngx-select__selected.ng-star-inserted > div').click
+    sleep 1
     click_link 'Imposto pago no exterior'
     fill_in 'dataLancamento', with: Date.strptime(tax.first, '%m/%d/%Y').strftime('%d/%m/%Y')
     fill_in 'historico', with: "Imposto pago referente a #{tax[3]}. Dólar Compra PTAX R$ #{@ptax_buy_rate}."
     fill_in 'valor', with: "R$ #{tax.last.truncate(2)}"
     click_button 'INCLUIR PAGAMENTO'
+    sleep 1
+    click_button 'RETORNAR'
+    sleep 2
   end
 end
 
 And('I fill in the dividend information') do
   visit 'https://www3.cav.receita.fazenda.gov.br/carneleao/rendimentos'
-  @transactions.reject { |transaction| transaction[2] == 'NRA Tax' }.each do |tax|
-    # Fill rendimentos
+
+  begin
+    sleep 3
+    find('body > modal-container > div.modal-dialog.modal-dialog-centered > div > clweb-modal-confirmar-ciencia-inicial > div > div > div > div.modal-footer > div > div.form-group.col-sm-3 > button').click
+  rescue StandardError => e
+    puts e
+  end
+
+  @transactions.reject { |transaction| transaction[2] == 'NRA Tax' }.each do |payment|
+    click_link 'Rendimentos'
+    sleep 3
+    find('#conteudo > clweb-lista-rendimento > nb-card > nb-card-header > div > div:nth-child(2) > button > div.size-11').click
+    sleep 1
+    find('#conteudo > clweb-rendimento > nb-card > nb-card-body > div > div > form > div > div:nth-child(1) > nb-card > nb-card-body > div > div:nth-child(1) > div > div > div > ngx-select > div > div.ngx-select__selected.ng-star-inserted > div').click
+    sleep 1
+    click_link 'Outros'
+    sleep 1
+    find('#conteudo > clweb-rendimento > nb-card > nb-card-body > div > div > form > div > div:nth-child(2) > div > nb-card > nb-card-body > div:nth-child(1) > div > nb-radio-group > nb-radio:nth-child(2) > label > span.inner-circle').click
+    fill_in 'dataLancamento', with: Date.strptime(payment.first, '%m/%d/%Y').strftime('%d/%m/%Y')
+    fill_in 'historico', with: "Rendimento referente a #{payment[3]}. Dólar Compra PTAX R$ #{@ptax_buy_rate}."
+    fill_in 'valor', with: "R$ #{payment.last.truncate(2)}"
+    click_button 'INCLUIR RENDIMENTO'
+    sleep 1
+    click_button 'RETORNAR'
+    sleep 2
   end
 end
 
 Then('All transactions are inputted into the system') do
-  taxes_count = @transactions.select { |transaction| transaction[2] == 'NRA Tax' }.size
+  visit 'https://www3.cav.receita.fazenda.gov.br/carneleao/rendimentos'
+  click_link 'Rendimentos'
+  sleep 5
+  payments_count = @transactions.select { |transaction| transaction[2] == 'NRA Tax' }.size
   dividends_count = @transactions.reject { |transaction| transaction[2] == 'NRA Tax' }.size
-  # Check if all taxes were inputted into the system
-  # Check if all dividends were inputted into the system
+  dividends_dates = find_all('mat-cell:nth-child(2)').map { |d| Date.strptime(d.text, '%d/%m/%Y') }
+  month = dividends_dates[0].month
+  statement_dividend_dates = dividends_dates.select { |sd| sd.month == month }
+  click_link 'Pagamentos'
+  sleep 5
+  payments_dates = find_all('mat-cell:nth-child(2)').map { |d| Date.strptime(d.text, '%d/%m/%Y') }
+  month = payments_dates[0].month
+  statement_payment_dates = payments_dates.select { |sd| sd.month == month }
+
+  expect(statement_dividend_dates.size).to eq(dividends_count)
+  expect(statement_payment_dates.size).to eq(payments_count)
 end
 
 def fetch_ptax_rate(date)
