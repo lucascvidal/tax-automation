@@ -33,17 +33,54 @@ Then('I fill in the payment information') do
   @transactions.select { |transaction| transaction[2] == 'NRA Tax' }.each do |tax|
     click_link 'Pagamentos'
     sleep 3
-    find('#conteudo > clweb-lista-pagamento > nb-card > nb-card-header > div > div.form-group.col-sm-4 > button').click
+    element_not_found = true
+    while element_not_found
+      begin
+        find('#conteudo > clweb-lista-pagamento > nb-card > nb-card-header > div > div.form-group.col-sm-4 > button').click
+        element_not_found = false
+      rescue StandardError => e
+        puts e
+      end
+    end
+
     sleep 1
-    find('#conteudo > clweb-pagamento > nb-card > nb-card-body > div > div > form > div > div:nth-child(1) > nb-card > nb-card-body > div > div > div:nth-child(1) > div > div > div > ngx-select > div > div.ngx-select__selected.ng-star-inserted > div').click
+    element_not_found = true
+    while element_not_found
+      begin
+        find('#conteudo > clweb-pagamento > nb-card > nb-card-body > div > div > form > div > div:nth-child(1) > nb-card > nb-card-body > div > div > div:nth-child(1) > div > div > div > ngx-select > div > div.ngx-select__selected.ng-star-inserted > div').click
+        element_not_found = false
+      rescue StandardError => e
+        puts e
+        sleep 1
+      end
+    end
+
     sleep 1
-    click_link 'Imposto pago no exterior'
+    element_not_found = true
+    while element_not_found
+      begin
+        click_link 'Imposto pago no exterior'
+        element_not_found = false
+      rescue StandardError => e
+        puts e
+        sleep 1
+      end
+    end
     fill_in 'dataLancamento', with: Date.strptime(tax.first, '%m/%d/%Y').strftime('%d/%m/%Y')
     fill_in 'historico', with: "Imposto pago referente a #{tax[3]}. Dólar Compra PTAX R$ #{@ptax_buy_rate}."
     fill_in 'valor', with: "R$ #{tax.last.truncate(2)}"
     click_button 'INCLUIR PAGAMENTO'
     sleep 1
-    click_button 'RETORNAR'
+    element_not_found = true
+    while element_not_found
+      begin
+        click_button 'RETORNAR'
+        element_not_found = false
+      rescue StandardError => e
+        puts e
+        sleep 1
+      end
+    end
     sleep 2
   end
 end
@@ -61,19 +98,66 @@ And('I fill in the dividend information') do
   @transactions.reject { |transaction| transaction[2] == 'NRA Tax' }.each do |payment|
     click_link 'Rendimentos'
     sleep 3
-    find('#conteudo > clweb-lista-rendimento > nb-card > nb-card-header > div > div:nth-child(2) > button > div.size-11').click
+    element_not_found = true
+    while element_not_found
+      begin
+        find('#conteudo > clweb-lista-rendimento > nb-card > nb-card-header > div > div:nth-child(2) > button > div.size-11').click
+        element_not_found = false
+      rescue StandardError => e
+        puts e
+        sleep 1
+      end
+    end
+
     sleep 1
-    find('#conteudo > clweb-rendimento > nb-card > nb-card-body > div > div > form > div > div:nth-child(1) > nb-card > nb-card-body > div > div:nth-child(1) > div > div > div > ngx-select > div > div.ngx-select__selected.ng-star-inserted > div').click
+    element_not_found = true
+    while element_not_found
+      begin
+        find('#conteudo > clweb-rendimento > nb-card > nb-card-body > div > div > form > div > div:nth-child(1) > nb-card > nb-card-body > div > div:nth-child(1) > div > div > div > ngx-select > div > div.ngx-select__selected.ng-star-inserted > div').click
+        element_not_found = false
+      rescue StandardError => e
+        puts e
+        sleep 1
+      end
+    end
+
     sleep 1
-    click_link 'Outros'
+    element_not_found = true
+    while element_not_found
+      begin
+        click_link 'Outros'
+        element_not_found = false
+      rescue StandardError => e
+        puts e
+        sleep 1
+      end
+    end
     sleep 1
-    find('#conteudo > clweb-rendimento > nb-card > nb-card-body > div > div > form > div > div:nth-child(2) > div > nb-card > nb-card-body > div:nth-child(1) > div > nb-radio-group > nb-radio:nth-child(2) > label > span.inner-circle').click
+    element_not_found = true
+    while element_not_found
+      begin
+        find('#conteudo > clweb-rendimento > nb-card > nb-card-body > div > div > form > div > div:nth-child(2) > div > nb-card > nb-card-body > div:nth-child(1) > div > nb-radio-group > nb-radio:nth-child(2) > label > span.inner-circle').click
+        element_not_found = false
+      rescue StandardError => e
+        puts e
+        sleep 1
+      end
+    end
     fill_in 'dataLancamento', with: Date.strptime(payment.first, '%m/%d/%Y').strftime('%d/%m/%Y')
     fill_in 'historico', with: "Rendimento referente a #{payment[3]}. Dólar Compra PTAX R$ #{@ptax_buy_rate}."
     fill_in 'valor', with: "R$ #{payment.last.truncate(2)}"
     click_button 'INCLUIR RENDIMENTO'
     sleep 1
-    click_button 'RETORNAR'
+    element_not_found = true
+    while element_not_found
+      begin
+        click_button 'RETORNAR'
+        element_not_found = false
+      rescue StandardError => e
+        puts e
+        sleep 1
+      end
+    end
     sleep 2
   end
 end
@@ -84,7 +168,16 @@ Then('All transactions are inputted into the system') do
   sleep 5
   payments_count = @transactions.select { |transaction| transaction[2] == 'NRA Tax' }.size
   dividends_count = @transactions.reject { |transaction| transaction[2] == 'NRA Tax' }.size
-  dividends_dates = find_all('mat-cell:nth-child(2)').map { |d| Date.strptime(d.text, '%d/%m/%Y') }
+  element_not_found = true
+  while element_not_found
+    begin
+      dividends_dates = find_all('mat-cell:nth-child(2)').map { |d| Date.strptime(d.text, '%d/%m/%Y') }
+      element_not_found = false
+    rescue StandardError => e
+      puts e
+      sleep 1
+    end
+  end
   month = dividends_dates[0].month
   statement_dividend_dates = dividends_dates.select { |sd| sd.month == month }
   click_link 'Pagamentos'
@@ -100,14 +193,18 @@ end
 def fetch_ptax_rate(date)
   ptax_buy_rate = nil
   while ptax_buy_rate.nil?
-    url = URI("https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/CotacaoDolarDia(dataCotacao=@dataCotacao)?@dataCotacao='#{date.strftime('%m-%d-%Y')}'&$top=100&$format=json")
-    https = Net::HTTP.new(url.host, url.port)
-    https.use_ssl = true
-    request = Net::HTTP::Get.new(url)
-    response = https.request(request)
+    begin
+      url = URI("https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/CotacaoDolarDia(dataCotacao=@dataCotacao)?@dataCotacao='#{date.strftime('%m-%d-%Y')}'&$top=100&$format=json")
+      https = Net::HTTP.new(url.host, url.port)
+      https.use_ssl = true
+      request = Net::HTTP::Get.new(url)
+      response = https.request(request)
 
-    ptax_buy_rate = JSON.parse(response.body)['value'][0]['cotacaoCompra']
-    date -= 1
+      ptax_buy_rate = JSON.parse(response.body)['value'][0]['cotacaoCompra']
+    rescue NoMethodError => e
+      puts e.message
+      date -= 1
+    end
   end
 
   ptax_buy_rate
