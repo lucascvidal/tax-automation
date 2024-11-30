@@ -28,7 +28,10 @@ def parse_transaction_details(text)
 end
 
 def dividend_payment?(line)
-  line.match?(/\bDividend\b/) && (line.match?(/\bCash Dividend\b/) || line.match?(/\bNon-Qualified Div\b/))
+  line.match?(/\bDividend\b/) &&
+    (line.match?(/\bCash Dividend\b/) ||
+    line.match?(/\bNon-Qualified Div\b/) ||
+    line.match?(/\bQual. Dividend\b/))
 end
 
 def dividend_tax?(line)
@@ -53,5 +56,6 @@ def remove_line_breaks_from_category(text)
   text.gsub("NRA Tax\n", 'NRA Tax')
       .gsub("Cash Dividend\n", 'Cash Dividend')
       .gsub("Non-Qualified Div\n", 'Non-Qualified Div')
+      .gsub("Qual. Dividend\n", 'Qual. Dividend')
       .gsub("Credit Interest\n", 'Credit Interest')
 end
