@@ -18,7 +18,7 @@ def parse_transaction_details(text)
   text.each_line do |line|
     next if line.include? 'SYMBOL'
 
-    if dividend_payment?(line) || dividend_tax?(line)
+    if dividend_payment?(line) || dividend_tax?(line) || interest_payment?(line) || interest_tax?(line)
       columns = line.strip.split(/\s{2,}/)
       transactions << columns
     end
@@ -33,6 +33,14 @@ end
 
 def dividend_tax?(line)
   line.match?(/\bDividend\b/) && line.match?(/\bNRA Tax\b/)
+end
+
+def interest_payment?(line)
+  line.match?(/\Interest\b/) && line.match?(/\bCredit Interest\b/)
+end
+
+def interest_tax?(line)
+  line.match?(/\Interest\b/) && line.match?(/\bNRA Tax\b/)
 end
 
 def parse_statement_period(text)
