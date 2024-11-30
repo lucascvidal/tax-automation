@@ -18,13 +18,21 @@ def parse_transaction_details(text)
   text.each_line do |line|
     next if line.include? 'SYMBOL'
 
-    if line.include?('Cash Dividend') || line.include?('Non-Qualified Div') || line.include?('NRA Tax')
+    if dividend_payment?(line) || dividend_tax?(line)
       columns = line.strip.split(/\s{2,}/)
       transactions << columns
     end
   end
 
   transactions
+end
+
+def dividend_payment?(line)
+  line.match?(/\bDividend\b/) && (line.match?(/\bCash Dividend\b/) || line.match?(/\bNon-Qualified Div\b/))
+end
+
+def dividend_tax?(line)
+  line.match?(/\bDividend\b/) && line.match?(/\bNRA Tax\b/)
 end
 
 def parse_statement_period(text)
@@ -37,4 +45,5 @@ def remove_line_breaks_from_category(text)
   text.gsub("NRA Tax\n", 'NRA Tax')
       .gsub("Cash Dividend\n", 'Cash Dividend')
       .gsub("Non-Qualified Div\n", 'Non-Qualified Div')
+      .gsub("Credit Interest\n", 'Credit Interest')
 end
