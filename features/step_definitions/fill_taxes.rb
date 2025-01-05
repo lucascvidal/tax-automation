@@ -23,14 +23,15 @@ Then('I fill in the payment information') do
   add_cookies(cookies['cookies'])
   visit 'https://www3.cav.receita.fazenda.gov.br/carneleao/pagamentos'
 
-  begin
-    sleep 3
-    find('body > modal-container > div.modal-dialog.modal-dialog-centered > div > clweb-modal-confirmar-ciencia-inicial > div > div > div > div.modal-footer > div > div.form-group.col-sm-3 > button').click
-  rescue StandardError => e
-    puts e
+  loop do
+      find('body > modal-container > div.modal-dialog.modal-dialog-centered > div > clweb-modal-confirmar-ciencia-inicial > div > div > div > div.modal-footer > div > div.form-group.col-sm-3 > button').click
+      break
+  rescue Capybara::ElementNotFound
+    sleep 1
   end
-
+  
   @transactions.select { |transaction| transaction[2] == 'NRA Tax' }.each do |tax|
+    check_calendar_date(tax.first.split('/').last)
     click_link 'Pagamentos'
     sleep 3
     element_not_found = true
@@ -96,6 +97,7 @@ And('I fill in the dividend information') do
   end
 
   @transactions.reject { |transaction| transaction[2] == 'NRA Tax' }.each do |payment|
+    check_calendar_date(payment.first.split('/').last)
     click_link 'Rendimentos'
     sleep 3
     element_not_found = true
@@ -164,6 +166,7 @@ end
 
 Then('All transactions are inputted into the system') do
   visit 'https://www3.cav.receita.fazenda.gov.br/carneleao/rendimentos'
+  check_calendar_date(@transactions[0].first.split('/').last)
   click_link 'Rendimentos'
   sleep 5
   payments_count = @transactions.select { |transaction| transaction[2] == 'NRA Tax' }.size
@@ -254,5 +257,21 @@ def add_cookies(cookies)
                              expires: cookie['expires'] ? Time.at(cookie['expires']) : nil,
                              secure: cookie['secure'],
                              http_only: cookie['httpOnly'] })
+  end
+end
+
+def check_calendar_date(actual_date)
+  loop do
+    begin
+      calendar_date = find('#main-header > clweb-nav-ano-calendario > div > span').text
+      if calendar_date == actual_date
+        break
+      else
+        find('#navAnoAnterior').click
+      end
+      sleep 2
+    rescue StandardError => e
+      puts e
+    end
   end
 end
