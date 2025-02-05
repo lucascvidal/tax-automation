@@ -14,7 +14,7 @@ Given('I prepare the transactions details data') do
   @transactions = pdf_data[:transactions]
   clean_and_convert_amount(@transactions)
   add_missing_dates(@transactions)
-  complement_date_with_year(@transactions, ptax_date.year)
+  complement_date_with_year(@transactions, split_statement_period.last)
   convert_using_ptax(@transactions, @ptax_buy_rate)
 end
 
@@ -30,7 +30,7 @@ Then('I fill in the payment information') do
     sleep 1
   end
   
-  @transactions.select { |transaction| transaction[2] == 'NRA Tax' }.each do |tax|
+  @transactions.select { |transaction| transaction[2].match?(/\bNRA Tax\b/) }.each do |tax|
     check_calendar_date(tax.first.split('/').last)
     click_link 'Pagamentos'
     sleep 3
@@ -96,7 +96,7 @@ And('I fill in the dividend information') do
     puts e
   end
 
-  @transactions.reject { |transaction| transaction[2] == 'NRA Tax' }.each do |payment|
+  @transactions.reject { |transaction| transaction[2].match?(/\bNRA Tax\b/) }.each do |payment|
     check_calendar_date(payment.first.split('/').last)
     click_link 'Rendimentos'
     sleep 3
@@ -169,8 +169,8 @@ Then('All transactions are inputted into the system') do
   check_calendar_date(@transactions[0].first.split('/').last)
   click_link 'Rendimentos'
   sleep 5
-  payments_count = @transactions.select { |transaction| transaction[2] == 'NRA Tax' }.size
-  dividends_count = @transactions.reject { |transaction| transaction[2] == 'NRA Tax' }.size
+  payments_count = @transactions.select { |transaction| transaction[2].match?(/\bNRA Tax\b/) }.size
+  dividends_count = @transactions.reject { |transaction| transaction[2].match?(/\bNRA Tax\b/) }.size
   element_not_found = true
   while element_not_found
     begin
@@ -228,6 +228,13 @@ def add_missing_dates(transactions)
     else
       transaction.unshift(last_date)
     end
+
+    joined_element = transaction[2..4].join(" ")
+    transaction.slice!(2, 3)
+    transaction.insert(2, joined_element)
+    split_elements = transaction[2].split(/\s{2,}/)
+    transaction.delete_at(2)
+    transaction.insert(2, *split_elements)
   end
 end
 
